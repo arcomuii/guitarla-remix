@@ -1,4 +1,5 @@
-import { useLoaderData } from "@remix-run/react"
+import { useLoaderData, useOutletContext } from "@remix-run/react"
+import { useState } from "react"
 import { getGuitarra } from "~/models/guitarras.server"
 
 export async function loader({params}) {
@@ -28,8 +29,28 @@ export function meta({data}) {
 }
 
 const Guitarra = () => {
+    const { agregarCarrito } = useOutletContext()
+    const [ cantidad, setCantidad ] = useState(0)
     const guitarra = useLoaderData()
     const { tx_descripcion, i_precio, vc_nombre, vc_imagen } = guitarra
+
+    const handleSubmit = e => {
+        e.preventDefault()
+        if(cantidad < 1) {
+            alert("La cantidad debe ser mayor a 0")
+            return
+        }
+
+        const guitarraSelleccionada = {
+            id: guitarra.id,
+            imagen: guitarra.vc_imagen,
+            nombre: guitarra.vc_nombre,
+            precio: guitarra.i_precio,
+            cantidad
+        }
+        agregarCarrito(guitarraSelleccionada)
+    }
+
     return (
         <div className="guitarra">
             <img className="imagen" src={vc_imagen} alt={vc_nombre} />
@@ -38,6 +59,21 @@ const Guitarra = () => {
                 <p className="text">{tx_descripcion}</p>
                 <p className="precio">{i_precio}</p>
 
+                <form onSubmit={handleSubmit} className="formulario">
+                    <label htmlFor="cantidad">Cantidad</label>
+                    <select 
+                        onChange={ e => setCantidad(+e.target.value) } 
+                        id="cantidad"
+                    >
+                        <option value="0">--Seleccione--</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                    <input type="submit" value="Agregar al carrito" />
+                </form>
             </div>
         </div>
     )
